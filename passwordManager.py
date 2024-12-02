@@ -2,6 +2,7 @@ from tkinter import *
 import random
 import string
 from cryptography.fernet import Fernet
+import mysql.connector
 
 class passwordManager:
     def __init__(self, root):
@@ -16,7 +17,7 @@ class passwordManager:
         self.fernet = Fernet(self.key)
 
         
-        
+        self.password_generator = dataBaseManagement()
 
 
         self.gp_button = Button(self.root, text="Generate password", command=self.generatePassword)
@@ -85,6 +86,25 @@ class passwordManager:
         print("Encrypted string",self.encPassword)
         print("Decrypted string",self.decPassword)
 
+class dataBaseManagement:
+    def __init__(self):
+        self.db_conncetion = mysql.connect(
+            host = "localhost",
+            user = "root",
+            password = "saurav1124@",
+            database = "password_manager"
+        )
+        self.cursor = self.db_conncetion.cursor()
+        self.create_table()
+    def create_table(self):
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS passwords(id INT AUTO_INCREMENT PRIMARY KEY, link VARCHAR(255) not null, password VARCHAR(255) text not null ) ")
+        self.db_conncetion.commit()
+    def save_password(self,link,encrypted_password):
+        self.cursor.execute("insert into passwords(link,password) values(%s,%s)",(link,encrypted_password))
+        self.db_conncetion.commit()
+    def fetch_password(self):
+        self.cursor.execute("select * from passwords")
+        return self.cursor.fetchall()
 
 
 if __name__ == "__main__":
